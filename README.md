@@ -24,10 +24,11 @@ To build a feature branch or any unstaged local changes: `mib -b <target_branch>
 
 ```bash
 Execute a maven incremental build (requires gitflow-incremental-builder maven extension)
-Usage: /usr/local/bin/mib [-s|--(no-)skip-tests] [-i|--(no-)skip-it] [-b|--branch <arg>] [-h|--help] [<maven-goals-1>] ... [<maven-goals-n>] ...
+Usage: /usr/local/bin/mib [-s|--(no-)skip-tests] [-i|--(no-)skip-it] [-S|--(no-)skip-static] [-b|--branch <arg>] [-h|--help] [<maven-goals-1>] ... [<maven-goals-n>] ...
 	<maven-goals>: Specify any maven goals to execute. (Note: non-goal arguments not yet supported) (defaults for <maven-goals>: 'install')
 	-s,--skip-tests,--no-skip-tests: Skips all tests (off by default)
 	-i,--skip-it,--no-skip-it: Skips integration tests (off by default)
+	-S,--skip-static,--no-skip-static: Skips static analysis plugins (off by default)
 	-b,--branch: Specify the branch to use for incremental build comparison (default: 'origin/master')
 	-h,--help: Prints help
 ```
