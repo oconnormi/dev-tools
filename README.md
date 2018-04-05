@@ -45,12 +45,32 @@ There are also some additional options for starting the system in debug mode and
 ```bash
 Bootstrap a ddf node from an unzipped ddf archive)
 Usage: /usr/local/bin/ddf-boot [-s|--(no-)disable-security] [-p|--https-port <arg>] [-P|--http-port <arg>] [--profile <arg>] [-d|--(no-)debug-mode] [-i|--(no-)interactive-client] [-h|--help] [<ddf-directory>]
-	<ddf-directory>: Directory where ddf instance is located (default: '/Users/michaeloconnor')
+	<ddf-directory>: Directory where ddf instance is located (default: '$(pwd)')
 	-s,--disable-security,--no-disable-security: Disable security manager (off by default)
 	-p,--https-port: Set https port for ddf instance (default: '8993')
 	-P,--http-port: Set http port for ddf instance (default: '8181')
 	--profile: Installation profile (no default)
 	-d,--debug-mode,--no-debug-mode: Enables karaf debug mode (off by default)
 	-i,--interactive-client,--no-interactive-client: Start a client session after system boots (off by default)
+	-h,--help: Prints help
+```
+
+## ddf-create-cdm
+
+Useful for ddf development and testing. This script will create a cdm config given only a path to a directory. It also allows any additional settings for the cdm to be specified. By default this script should be run from inside of DDF_HOME, otherwise specify ddf home directory via `-d <path>`
+
+If a cdm configuration for a given directory already exists the script will do nothing and will exit with a value of `1`
+
+### Usage
+
+```
+Create a ContentDirectoryMonitor for a specified directory. Nothing will be done if configuration already exists
+Usage: /usr/local/bin/ddf-create-cdm [-p|--processing-mechanism <arg>] [-t|--threads <arg>] [-d|--ddf-directory <arg>] [-r|--readlock-interval <arg>] [-o|--attribute-override <arg>] [-h|--help] <directory>
+	<directory>: Specify the path to the directory to be monitored
+	-p,--processing-mechanism: behavior when files are processed. Choices are in_place, move, and delete (default: 'in_place')
+	-t,--threads: specify the number of threads to use for processing files (default: '1')
+	-d,--ddf-directory: Directory where ddf instance is located (default: '$(pwd)')
+	-r,--readlock-interval: specify the amount of time to wait before acquiring a file lock (default: '500')
+	-o,--attribute-override: Specify attribute overrides of the form 'key=value' (Not yet supported!) (empty by default)
 	-h,--help: Prints help
 ```
