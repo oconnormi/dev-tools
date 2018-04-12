@@ -20,13 +20,13 @@ _ddf_etc=${KARAF_ETC:="${_arg_ddf_directory}/etc"}
 ###### Content Directory Monitor Constants #######
 # Basic CDM properties
 _cdm_pid=org.codice.ddf.catalog.content.monitor.ContentDirectoryMonitor
-_cdm_config_extension=.config
+_cdm_config_extension=config
 ##################################################
 
 # Checks if a CDM configuration exists for a given path
 function cdmConfigExists {
   shopt -s extglob
-  local result=$(find ${_app_etc} -type f -name "${_cdm_pid}*" -exec grep -H "${_arg_directory}" {} \; | wc -l)
+  local result=$(find ${_ddf_etc} -type f -name "${_cdm_pid}*" -exec grep -H "${_arg_directory}" {} \; | wc -l)
   result=${result##*( )}
   result=${result%%*( )}
   shopt -u extglob
@@ -52,7 +52,7 @@ function generateConfigUUID() {
 
 # Create a configuration for with the provided cdm options
 function createConfig() {
-  local _cdm_config_path=${_app_etc}/${_cdm_pid}-$(generateConfigUUID).${_cdm_config_extension}
+  local _cdm_config_path=${_ddf_etc}/${_cdm_pid}-$(generateConfigUUID).${_cdm_config_extension}
   local _cdm_service_pid=$(generateServicePid)
   cat > ${_cdm_config_path} << EOF
 monitoredDirectoryPath="${_arg_directory}"
