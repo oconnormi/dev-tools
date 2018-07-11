@@ -20,7 +20,7 @@ exit 11  #)Created by argbash-init v2.6.1
 _ddf_bin=${_arg_ddf_directory}/bin
 _ddf_etc=${_arg_ddf_directory}/etc
 _ddf_data=${_arg_ddf_directory}/data
-_distro_name=$(basename ${_arg_ddf_directory} | cut -f1 -d"-")
+_distro_name=$(props get org.codice.ddf.system.branding ${_ddf_etc}/system.properties)
 _client="${_ddf_bin}/client -r 12 -d 10"
 _hostname=${_arg_hostname}
 
