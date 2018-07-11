@@ -7,6 +7,7 @@ exit 11  #)Created by argbash-init v2.6.1
 # ARG_OPTIONAL_SINGLE([https-port], [p], [Set https port for ddf instance], [8993])
 # ARG_OPTIONAL_SINGLE([http-port], [P], [Set http port for ddf instance], [8181])
 # ARG_OPTIONAL_SINGLE([profile], [], [Installation profile])
+# ARG_OPTIONAL_SINGLE([hostname], [H], [Hostname used by the system], [$(hostname -f)])
 # ARG_OPTIONAL_BOOLEAN([debug-mode], [d], [Enables karaf debug mode])
 # ARG_OPTIONAL_BOOLEAN([interactive-client], [i], [Start a client session after system boots])
 # ARG_POSITIONAL_SINGLE([ddf-directory], [Directory where ddf instance is located], [$(pwd)])
@@ -21,6 +22,7 @@ _ddf_etc=${_arg_ddf_directory}/etc
 _ddf_data=${_arg_ddf_directory}/data
 _distro_name=$(basename ${_arg_ddf_directory} | cut -f1 -d"-")
 _client="${_ddf_bin}/client -r 12 -d 10"
+_hostname=${_arg_hostname}
 
 function disableSecMgr {
   props del policy.provider ${_ddf_etc}/system.properties
@@ -30,17 +32,17 @@ function disableSecMgr {
 }
 
 function configureHost {
-  echo "Configuring Host Specific properties for hostname $(hostname -f)"
-  props set org.codice.ddf.system.hostname $(hostname -f) ${_ddf_etc}/system.properties
+  echo "Configuring Host Specific properties for hostname ${_hostname}"
+  props set org.codice.ddf.system.hostname ${_hostname} ${_ddf_etc}/system.properties
   props del localhost ${_ddf_etc}/users.properties
-  props set $(hostname -f) "$(hostname -f),group,admin,manager,viewer,system-admin,system-history,systembundles" ${_ddf_etc}/users.properties
-  sed -i '' "s/localhost/$(hostname -f)/" ${_ddf_etc}/users.attributes
+  props set ${_hostname} "${_hostname},group,admin,manager,viewer,system-admin,system-history,systembundles" ${_ddf_etc}/users.properties
+  sed -i '' "s/localhost/${_hostname}/" ${_ddf_etc}/users.attributes
 }
 
 function genCerts {
-  echo -e "Generating certificates for $(hostname -f)\n\tCN: $(hostname -f)\n\tSAN: \n\t\tDNS:$(hostname -f),\n\t\tDNS:localhost,\n\t\tIP:127.0.0.1"
+  echo -e "Generating certificates for ${_hostname}\n\tCN: ${_hostname}\n\tSAN: \n\t\tDNS:${_hostname},\n\t\tDNS:localhost,\n\t\tIP:127.0.0.1"
   chmod 755 ${_ddf_etc}/certs/*.sh
-  ${_ddf_etc}/certs/CertNew.sh -cn $(hostname -f) -san "DNS:$(hostname -f),DNS:localhost,IP:127.0.0.1"
+  ${_ddf_etc}/certs/CertNew.sh -cn ${_hostname} -san "DNS:${_hostname},DNS:localhost,IP:127.0.0.1"
 }
 
 function setPorts {
