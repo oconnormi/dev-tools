@@ -6,6 +6,8 @@ exit 11  #)Created by argbash-init v2.6.1
 # ARG_OPTIONAL_BOOLEAN([disable-security], [s], [Disable security manager])
 # ARG_OPTIONAL_SINGLE([https-port], [p], [Set https port for ddf instance], [8993])
 # ARG_OPTIONAL_SINGLE([http-port], [P], [Set http port for ddf instance], [8181])
+# ARG_OPTIONAL_SINGLE([ssh-port], [], [Set ssh port for ddf instance], [8101])
+# ARG_OPTIONAL_SINGLE([solr-port], [], [Set solr port for ddf instance], [8994])
 # ARG_OPTIONAL_SINGLE([profile], [], [Installation profile])
 # ARG_OPTIONAL_SINGLE([hostname], [H], [Hostname used by the system], [$(hostname -f)])
 # ARG_OPTIONAL_BOOLEAN([debug-mode], [d], [Enables karaf debug mode])
@@ -49,6 +51,8 @@ function setPorts {
   echo -e "Setting Up ports:\n\tHTTPS:${_arg_https_port}\n\tHTTP:${_arg_http_port}"
   props set org.codice.ddf.system.httpsPort ${_arg_https_port} ${_ddf_etc}/system.properties
   props set org.codice.ddf.system.httpPort ${_arg_http_port} ${_ddf_etc}/system.properties
+  props set solr.http.port ${_arg_solr_port} ${_ddf_etc}/system.properties
+  props set sshPort ${_arg_ssh_port} ${_ddf_etc}/org.apache.karaf.shell.cfg
 }
 
 function startSystem {
