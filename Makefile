@@ -2,6 +2,7 @@ BUILD_ROOT ?= build
 CMD_OUTPUT ?= $(BUILD_ROOT)/cmd
 COMPLETION_OUTPUT ?= $(BUILD_ROOT)/completion
 MKDIR = mkdir -p
+ARGBASH = $(BUILD_ROOT)/tools/argbash/bin/argbash
 TEMPLATE_DIR = templates
 SOURCES = $(shell find templates -type f -name *.m4 -exec basename {} \;)
 COMMAND_SOURCES = $(SOURCES:%.m4=$(CMD_OUTPUT)/%.sh)
@@ -29,13 +30,13 @@ $(CMD_OUTPUT):
 $(COMPLETION_OUTPUT):
 	@$(MKDIR) $(COMPLETION_OUTPUT)
 
-$(CMD_OUTPUT)/%.sh: $(CMD_OUTPUT)
+$(CMD_OUTPUT)/%.sh: dependencies $(CMD_OUTPUT)
 	@echo "Building: $@"
-	@argbash "$(TEMPLATE_DIR)/$(notdir $(@:.sh=.m4))" -o "$@"
+	@$(ARGBASH) "$(TEMPLATE_DIR)/$(notdir $(@:.sh=.m4))" -o "$@"
 
-$(COMPLETION_OUTPUT)/%.sh: $(COMPLETION_OUTPUT)
+$(COMPLETION_OUTPUT)/%.sh: dependencies $(COMPLETION_OUTPUT)
 	@echo "Building: $@"
-	@argbash --type completion "$(TEMPLATE_DIR)/$(notdir $(@:.sh=.m4))" -o "$@"
+	@$(ARGBASH) --type completion "$(TEMPLATE_DIR)/$(notdir $(@:.sh=.m4))" -o "$@"
 
 $(INSTALL_PREFIX)/bin/%:
 	@echo "Creating symlink for $@"
@@ -48,3 +49,23 @@ $(INSTALL_PREFIX)/etc/bash_completion.d/%.sh:
 .PHONY: clean
 clean:
 	@rm -rf $(BUILD_ROOT)
+
+.PHONY: dependencies
+dependencies: $(BUILD_ROOT)/tools/argbash
+
+$(BUILD_ROOT)/tools/argbash: $(BUILD_ROOT)/tmp $(BUILD_ROOT)/tools
+	@echo "Installing argbash"
+	@curl -LsSk "https://github.com/matejak/argbash/archive/2.7.0.tar.gz" -o $(BUILD_ROOT)/tmp/argbash-2.7.0.tar.gz
+	@tar xzf $(BUILD_ROOT)/tmp/argbash-2.7.0.tar.gz -C $(BUILD_ROOT)/tools/
+	@mv $(BUILD_ROOT)/tools/argbash-2.7.0 $(BUILD_ROOT)/tools/argbash
+
+$(BUILD_ROOT)/tools: $(BUILD_ROOT)
+	@$(MKDIR) $@
+
+$(BUILD_ROOT)/tmp: $(BUILD_ROOT)
+	@$(MKDIR) $@
+
+$(BUILD_ROOT):
+	@$(MKDIR) $@
+
+
