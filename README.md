@@ -32,6 +32,22 @@ Usage: /usr/local/bin/mib [-s|--(no-)skip-tests] [-i|--(no-)skip-it] [-S|--(no-)
 	-b,--branch: Specify the branch to use for incremental build comparison (default: 'origin/master')
 	-h,--help: Prints help
 ```
+## cmvn (Containerized mvn)
+This tool can be used to spin up a docker container for running builds in a more isolated environment. by default it runs an image `oconnormi/dind-maven` that runs a docker daemon inside the running container in order to test maven builds that need to interact with docker directly. As such it runs in privileged mode. 
+
+This tool will first take a look at the local git repository in the current directory and will create a git archive containing the current state of HEAD plus any unstaged changes. The result of this archive operation will be copied into the container that is spun up
+
+### Usage
+
+```bash
+Execute maven builds inside a container. Copies local changes into container to be built in isolation.
+Usage: /usr/local/bin/cmvn [--(no-)update-image] [--image <arg>] [--(no-)share-m2] [-h|--help] ... 
+  ... : Remaining arguments forwarded to containerized build
+    --update-image, --no-update-image: Updates the underlying docker image prior to starting (off by default)
+      --image: Image to use for isolated maven build (default: 'oconnormi/dind-maven')
+        --share-m2, --no-share-m2: Mounts local m2 directory into container. While this breaks isolation somewhat, it is useful for verifying certain build steps without downloading all dependencies every time (off by default)
+          -h, --help: Prints help
+```
 
 ## ddf-boot
 
