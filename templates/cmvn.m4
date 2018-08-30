@@ -15,14 +15,13 @@ exit 11  #)Created by argbash-init v2.6.1
 # Name for the git archive that will be generated and mounted into the build environment
 _archive_name=$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32)
 
-printf "\nCreating archive of current git HEAD+changes...\n"
 if git diff-index --quiet HEAD --; then
   git archive -o /tmp/${_archive_name}.tar.gz HEAD
 else
   git archive -o /tmp/${_archive_name}.tar.gz $(git stash create)
 fi
 
-_mounts="--mount type=bind,source=/tmp/${_archive_name}.tar.gz,target=/usr/local/src/src.tar.gz"
+_mounts="--mount type=bind,source=/tmp/${_archive_name}.tar.gz,target=/tmp/src.tar.gz"
 
 if [ "${_arg_share_m2}" = "on" ]; then
   _mounts="${_mounts} --mount type=bind,source=${HOME}/.m2,target=/root/.m2"
