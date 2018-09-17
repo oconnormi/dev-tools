@@ -13,7 +13,7 @@ exit 11  #)Created by argbash-init v2.6.1
 # [ <-- needed because of Argbash 
 
 # Name for the git archive that will be generated and mounted into the build environment
-_archive_name=$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32)
+_archive_name=$(cat /dev/urandom | LC_CTYPE=C tr -cd 'a-f0-9' | head -c 32)
 
 if git diff-index --quiet HEAD --; then
   git archive -o /tmp/${_archive_name}.tar.gz HEAD
