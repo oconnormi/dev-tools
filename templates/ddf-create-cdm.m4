@@ -16,11 +16,18 @@ exit 11  #)Created by argbash-init v2.6.1
 # [ <-- needed because of Argbash 
 
 _ddf_etc=${KARAF_ETC:="${_arg_ddf_directory}/etc"}
+_ddf_security=${_arg_ddf_directory}/security
 
 ###### Content Directory Monitor Constants #######
 # Basic CDM properties
 _cdm_pid=org.codice.ddf.catalog.content.monitor.ContentDirectoryMonitor
 _cdm_config_extension=config
+##################################################
+
+####### URL Resource Reader Constants #######
+# Basic URL Resource Reader properties
+_url_resource_reader_pid=ddf.catalog.resource.impl.URLResourceReader
+_url_resource_reader_config_extension=config
 ##################################################
 
 # Checks if a CDM configuration exists for a given path
@@ -50,8 +57,54 @@ function generateConfigUUID() {
   cat /dev/urandom | LC_CTYPE=C tr -dc 'a-f0-9' | fold -w 32 | head -n 1
 }
 
+# Generates CDM security policy for the directory being monitored
+function genCdmSecPolicy() {
+  local header="CDM Permissions for ${_arg_directory}"
+  if ! grep -q "${header}" ${_ddf_security}/configurations.policy; then
+    sed -i.bak "/Add required CDM permissions here/a\\
+\\
+\\    // ${header}:\\
+\\    permission java.io.FilePermission \"${_arg_directory}\", \"read\";\\
+\\    permission java.io.FilePermission \"${_arg_directory}\${\/}-\", \"read, write\";
+" ${_ddf_security}/configurations.policy
+  fi
+}
+
+# Generates URL Resource Reader security policy for the directory being monitored
+function genUrlSecPolicy() {
+  local header="URL Resource Reader Permissions for ${_arg_directory}"
+  if ! grep -q "${header}" ${_ddf_security}/configurations.policy; then
+    sed -i.bak "/Add required URL Resource Reader permissions here/a\\
+\\
+\\    // ${header}:\\
+\\    permission java.io.FilePermission \"${_arg_directory}\", \"read\";\\
+\\    permission java.io.FilePermission \"${_arg_directory}\${\/}-\", \"read\";
+" ${_ddf_security}/configurations.policy
+  fi
+}
+
+# Creates URL Resource Reader config
+function createUrlConfig() {
+  local _url_resource_reader_config_path=${_ddf_etc}/${_url_resource_reader_pid}.${_url_resource_reader_config_extension}
+  if [ ! -f ${_url_resource_reader_config_path} ]; then
+    cat > ${_url_resource_reader_config_path} << EOF
+followRedirects=B"false"
+rootResourceDirectories=[ \\
+  "data/products", \\
+  ]
+service.pid="${_url_resource_reader_pid}"
+EOF
+  fi
+  if ! grep -q "${_arg_directory}" ${_url_resource_reader_config_path}; then
+    sed -i.bak "/data\/products/a\\
+\\  \"${_arg_directory}\", \\\
+\\
+" ${_url_resource_reader_config_path}
+  fi
+}
+
 # Create a configuration for with the provided cdm options
-function createConfig() {
+function createCdmConfig() {
   local _cdm_config_path=${_ddf_etc}/${_cdm_pid}-$(generateConfigUUID).${_cdm_config_extension}
   local _cdm_service_pid=$(generateServicePid)
   cat > ${_cdm_config_path} << EOF
@@ -66,14 +119,21 @@ EOF
 
 # returns 0 when successful, 1 if config already exists
 function main {
-	exists=$(cdmConfigExists)
+  exists=$(cdmConfigExists)
   if [ "${exists}" -ne 0 ]; then
     echo "CDM already exists for directory ${_arg_directory}, skipping"
     return 1
   else
-	  echo "Creating configuration for ${_arg_directory}"
-	  createConfig && return 0
-	fi
+    echo "Creating CDM permissions and configuration for ${_arg_directory}"
+    if genCdmSecPolicy && createCdmConfig; then 
+      echo "Done"
+      if [ "${_arg_processing_mechanism}" == "in_place" ]; then
+        echo "Creating URL Resource Reader permissions and configuration for ${_arg_directory}"
+        genUrlSecPolicy && createUrlConfig && echo "Done" && return 0
+      fi
+      return 0
+    fi
+  fi
 }
 
 main
