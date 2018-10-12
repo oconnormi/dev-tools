@@ -19,23 +19,40 @@ exit 11  #)Created by argbash-init v2.6.1
 
 # [ <-- needed because of Argbash 
 
+function version_gt {
+  test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
+}
+
 _ddf_bin=${_arg_ddf_directory}/bin
 _ddf_etc=${_arg_ddf_directory}/etc
 _ddf_data=${_arg_ddf_directory}/data
-_distro_name=$(props get org.codice.ddf.system.branding ${_ddf_etc}/system.properties)
+_ddf_system=${_arg_ddf_directory}/system
+_ddf_version=$(ls ${_ddf_system}/ddf/platform/api/platform-api)
+_ddf_base_version=${_ddf_version%-SNAPSHOT}
+
+# If the distribution is built on a ddf version greater than 2.13.2 
+# set system properties location to custom.system.properties
+if version_gt ${_ddf_base_version} "2.13.2"; then
+  _system_properties=${_ddf_etc}/custom.system.properties
+else
+  _system_properties=${_system_properties}
+fi
+
+_distro_name=$(props get org.codice.ddf.system.branding ${_system_properties})
+_distro_version=$(cat ${_arg_ddf_directory}/Version.txt | awk '{$1=$1};1')
 _client="${_ddf_bin}/client -r 12 -d 10"
 _hostname=${_arg_hostname}
 
 function disableSecMgr {
-  props del policy.provider ${_ddf_etc}/system.properties
-  props del java.security.manager ${_ddf_etc}/system.properties
-  props del java.security.policy ${_ddf_etc}/system.properties
-  props del proGrade.getPermissions.override ${_ddf_etc}/system.properties
+  props del policy.provider ${_system_properties}
+  props del java.security.manager ${_system_properties}
+  props del java.security.policy ${_system_properties}
+  props del proGrade.getPermissions.override ${_system_properties}
 }
 
 function configureHost {
   echo "Configuring Host Specific properties for hostname ${_hostname}"
-  props set org.codice.ddf.system.hostname ${_hostname} ${_ddf_etc}/system.properties
+  props set org.codice.ddf.system.hostname ${_hostname} ${_system_properties}
   props del localhost ${_ddf_etc}/users.properties
   props set ${_hostname} "${_hostname},group,admin,manager,viewer,system-admin,system-history,systembundles" ${_ddf_etc}/users.properties
   sed -i '' "s/localhost/${_hostname}/" ${_ddf_etc}/users.attributes
@@ -49,14 +66,14 @@ function genCerts {
 
 function setPorts {
   echo -e "Setting Up ports:\n\tHTTPS:${_arg_https_port}\n\tHTTP:${_arg_http_port}"
-  props set org.codice.ddf.system.httpsPort ${_arg_https_port} ${_ddf_etc}/system.properties
-  props set org.codice.ddf.system.httpPort ${_arg_http_port} ${_ddf_etc}/system.properties
-  props set solr.http.port ${_arg_solr_port} ${_ddf_etc}/system.properties
+  props set org.codice.ddf.system.httpsPort ${_arg_https_port} ${_system_properties}
+  props set org.codice.ddf.system.httpPort ${_arg_http_port} ${_system_properties}
+  props set solr.http.port ${_arg_solr_port} ${_system_properties}
   props set sshPort ${_arg_ssh_port} ${_ddf_etc}/org.apache.karaf.shell.cfg
 }
 
 function startSystem {
-  echo "Starting System..."
+  echo "Starting ${_distro_name} v${_distro_version} ..."
   if [ "${_arg_debug_mode}" = on ]; then
     KARAF_DEBUG=true ${_ddf_bin}/start
   else
