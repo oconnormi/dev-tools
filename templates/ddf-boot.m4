@@ -35,7 +35,7 @@ _ddf_base_version=${_ddf_version%-SNAPSHOT}
 if version_gt ${_ddf_base_version} "2.13.2"; then
   _system_properties=${_ddf_etc}/custom.system.properties
 else
-  _system_properties=${_system_properties}
+  _system_properties=${_ddf_etc}/system.properties
 fi
 
 _distro_name=$(props get org.codice.ddf.system.branding ${_system_properties})
